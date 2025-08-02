@@ -2,18 +2,18 @@ import React, { useState, useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-type Action = {
+export type Action = {
   icon: keyof typeof MaterialIcons.glyphMap;
   onPress: () => void;
   color: string;
+  name: string; // for accessibility
 };
 
-const actions: Action[] = [
-  { icon: 'edit', onPress: () => alert('Edit'), color: '#61758A' },
-  { icon: 'folder-open', onPress: () => alert('Move'), color: '#61758A' },
-];
+type SpeedDialFabProps = {
+  actions: Action[];
+};
 
-export default function SpeedDialFab() {
+export default function SpeedDialFab({ actions }: SpeedDialFabProps) {
   const [isOpen, setIsOpen] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
 
