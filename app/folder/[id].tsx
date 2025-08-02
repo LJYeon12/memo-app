@@ -1,5 +1,6 @@
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import NoteListItem, { Note } from '../../components/NoteListItem';
@@ -24,8 +25,15 @@ const FOLDERS_DATA: { [key: string]: { name: string; noteCount: number } } = {
 
 export default function NoteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const folderDetails = FOLDERS_DATA[id || '1'] || { name: 'Unknown Folder', noteCount: 0 };
+  const navigation = useNavigation();
 
+  const folderDetails = useMemo(() => {
+    return FOLDERS_DATA[id || '1'] || { name: 'Unknown Folder', noteCount: 0 };
+  }, [id]);
+
+  useEffect(() => {
+    navigation.setOptions({ title: folderDetails.name });
+  }, [navigation, folderDetails]);
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
@@ -51,7 +59,7 @@ export default function NoteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: '#000000',
   },
   folderInfoContainer: {
     flexDirection: 'row',
