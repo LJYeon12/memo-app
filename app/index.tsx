@@ -18,8 +18,8 @@ export default function FoldersScreen() {
 
   const handleCreateNote = () => {
       // Create a note in the first folder by default, or handle case with no folders
-      if (folders.length > 0) {
-          addNote(folders[0].id, 'New Note');
+      if (rootFolders.length > 0) {
+          addNote(rootFolders[0].id, 'New Note');
       } else {
           Alert.alert("No Folders", "Please create a folder first to add a note.");
       }
