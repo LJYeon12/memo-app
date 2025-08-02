@@ -29,6 +29,21 @@ export default function RootLayout() {
           ),
         }}
       />
+      <Stack.Screen
+        name="note/[id]"
+        options={{
+          title: '제목',
+          headerStyle: {
+            backgroundColor: '#000000',
+          },
+          headerTintColor: '#FFFFFF',
+          headerRight: () => (
+            <TouchableOpacity onPress={() => alert('Note lock toggled!')}>
+              <MaterialIcons name="lock-outline" size={24} color="white" />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
   );
 }

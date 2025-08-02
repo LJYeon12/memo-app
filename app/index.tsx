@@ -3,7 +3,6 @@ import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from
 import { MaterialIcons } from '@expo/vector-icons';
 import FolderListItem, { Folder } from '../components/FolderListItem';
 
-
 // Initial data
 const initialFolders: Folder[] = [
   { id: '1', name: 'Personal', count: 12 },
@@ -29,6 +28,7 @@ export default function FoldersScreen() {
       currentFolders.filter(folder => folder.id !== id)
     );
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Folders</Text>
