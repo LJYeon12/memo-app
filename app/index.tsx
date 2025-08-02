@@ -6,11 +6,13 @@ import SpeedDialFab, { Action } from '../components/SpeedDialFab';
 
 
 export default function FoldersScreen() {
-  const { folders, addFolder, deleteFolder, addNote } = useAppContext();
+  const { getFoldersByParentId, getNotesByFolder, addFolder, deleteFolder, addNote } = useAppContext();
+
+  const rootFolders = getFoldersByParentId(null);
 
   const handleCreateFolder = () => {
     Alert.prompt('New Folder', 'Enter the name for the new folder:', text => {
-      addFolder(text);
+      addFolder(text, null); // Create a root folder
     });
   };
 
@@ -39,16 +41,20 @@ export default function FoldersScreen() {
   ];
 
   // This function needs to be updated to get note counts
-  const getFolderItemData = (folder: any) => ({
-      ...folder,
-      count: 0, // Placeholder
-  });
+  const getFolderItemData = (folder: any) => {
+      const subfolderCount = getFoldersByParentId(folder.id).length;
+      const noteCount = getNotesByFolder(folder.id).length;
+      return {
+          ...folder,
+          count: subfolderCount + noteCount,
+      }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Folders</Text>
       <FlatList
-        data={folders}
+        data={rootFolders}
         renderItem={({ item }) => (
           <FolderListItem item={getFolderItemData(item)} onDelete={deleteFolder} />
         )}

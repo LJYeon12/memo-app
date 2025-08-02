@@ -1,36 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TextInput } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Dummy data source for notes
-const NOTES_DATA: { [key: string]: { title: string; content: string } } = {
-  '1': { title: 'Meeting Notes', content: 'Discussed Q3 roadmap.' },
-  '2': { title: 'Grocery List', content: 'Milk, Eggs, Bread' },
-  '3': { title: 'Travel Plans', content: 'Book flight to Paris.' },
-  '4': { title: 'Project Ideas', content: 'Develop a new note-taking app.' },
-  '5': { title: 'Book Recommendations', content: 'Sapiens by Yuval Noah Harari' },
-};
+import { useAppContext } from '../../context/AppContext';
 
 
 export default function NoteEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
+  const { notes, updateNote } = useAppContext();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const isModified = useRef(false);
 
   useEffect(() => {
-    const note = NOTES_DATA[id || ''];
+    const note = notes.find(n => n.id === id);
     if (note) {
       setTitle(note.title);
       setContent(note.content);
     }
-  }, [id]);
+    isModified.current = false; // Reset on new note load
+  }, [id, notes]);
 
   useEffect(() => {
     navigation.setOptions({ title: title === '' ? 'New Note' : title });
-  }, [navigation, title]);
+    isModified.current = true;
+  }, [navigation, title, content]);
+
+  // Auto-save on unmount
+  useEffect(() => {
+    return () => {
+      if (isModified.current && id) {
+        updateNote(id, title, content);
+      }
+    };
+  }, [id, title, content, updateNote]);
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
