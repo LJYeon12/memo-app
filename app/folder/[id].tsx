@@ -3,24 +3,41 @@ import { Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NoteListItem from '../../components/NoteListItem';
+import FolderListItem from '../../components/FolderListItem';
 import SpeedDialFab, { Action } from '../../components/SpeedDialFab';
 import { useAppContext } from '../../context/AppContext';
 
-export default function NoteScreen() {
+export default function FolderScreen() { // Renamed for clarity
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
-  const { getNotesByFolder, getFolderById, addFolder, addNote } = useAppContext();
+  const { getNotesByFolder, getFoldersByParentId, getFolderById, addFolder, addNote, deleteFolder } = useAppContext();
 
-  const notes = getNotesByFolder(id || '');
-  const folder = getFolderById(id || '');
+  const notes = useMemo(() => getNotesByFolder(id || ''), [id, getNotesByFolder]);
+  const subFolders = useMemo(() => getFoldersByParentId(id || ''), [id, getFoldersByParentId]);
+  const folder = useMemo(() => getFolderById(id || ''), [id, getFolderById]);
+
+  const combinedData = useMemo(() => {
+      const getFolderItemData = (folder: any) => {
+          const subfolderCount = getFoldersByParentId(folder.id).length;
+          const noteCount = getNotesByFolder(folder.id).length;
+          return {
+              ...folder,
+              type: 'folder',
+              count: subfolderCount + noteCount,
+          }
+      };
+    const foldersWithType = subFolders.map(getFolderItemData);
+    const notesWithType = notes.map(n => ({ ...n, type: 'note' }));
+    return [...foldersWithType, ...notesWithType];
+  }, [subFolders, notes, getFoldersByParentId, getNotesByFolder]);
 
   useEffect(() => {
-    navigation.setOptions({ title: folder?.name || 'Notes' });
+    navigation.setOptions({ title: folder?.name || 'Folder' });
   }, [navigation, folder]);
 
   const handleCreateFolder = () => {
     Alert.prompt('New Folder', 'Enter the name for the new folder:', text => {
-      addFolder(text);
+      addFolder(text, id); // Create as subfolder
     });
   };
 
@@ -45,14 +62,21 @@ export default function NoteScreen() {
     },
   ];
 
+  const renderItem = ({ item }: { item: any }) => {
+    if (item.type === 'folder') {
+      return <FolderListItem item={item} onDelete={deleteFolder} />;
+    }
+    return <NoteListItem item={item} />;
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <FlatList
-        data={notes}
-        renderItem={({ item }) => <NoteListItem item={item} />}
+        data={combinedData}
+        renderItem={renderItem}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.emptyText}>No notes yet.</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>This folder is empty.</Text>}
       />
       <SpeedDialFab actions={fabActions} />
     </SafeAreaView>
