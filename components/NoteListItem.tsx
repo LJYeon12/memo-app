@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 
 export type Note = {
   id: string;
@@ -15,15 +16,17 @@ type NoteListItemProps = {
 
 const NoteListItem = ({ item }: NoteListItemProps) => {
   return (
-    <View style={styles.container}>
-      <View>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.date}>{item.date}</Text>
-      </View>
-      {item.isLocked && (
-        <MaterialIcons name="lock" size={20} color="white" />
-      )}
-    </View>
+    <Link href={`/note/${item.id}`} asChild>
+      <TouchableOpacity style={styles.container}>
+        <View>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.date}>{item.date}</Text>
+        </View>
+        {item.isLocked && (
+          <MaterialIcons name="lock" size={20} color="white" />
+        )}
+      </TouchableOpacity>
+    </Link>
   );
 };
 
