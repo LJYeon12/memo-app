@@ -1,12 +1,14 @@
 import { Stack } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { AppProvider } from '../context/AppContext';
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen
-        name="index"
+    <AppProvider>
+      <Stack>
+        <Stack.Screen
+          name="index"
         options={{
           headerShown: false, // Hide header on the main folder list screen
         }}
@@ -44,5 +46,6 @@ export default function RootLayout() {
         }}
       />
     </Stack>
+    </AppProvider>
   );
 }

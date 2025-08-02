@@ -1,33 +1,48 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import FolderListItem, { Folder } from '../components/FolderListItem';
+import React from 'react';
+import { View, Text, FlatList, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import FolderListItem from '../components/FolderListItem';
+import { useAppContext } from '../context/AppContext';
+import SpeedDialFab, { Action } from '../components/SpeedDialFab';
 
-// Initial data
-const initialFolders: Folder[] = [
-  { id: '1', name: 'Personal', count: 12 },
-  { id: '2', name: 'Work', count: 5 },
-  { id: '3', name: 'Ideas', count: 3 },
-  { id: '4', name: 'Recipes', count: 2 },
-];
 
 export default function FoldersScreen() {
-  const [folders, setFolders] = useState(initialFolders);
+  const { folders, addFolder, deleteFolder, addNote } = useAppContext();
 
-  const handleAddFolder = () => {
-    const newFolder: Folder = {
-      id: Date.now().toString(),
+  const handleCreateFolder = () => {
+    Alert.prompt('New Folder', 'Enter the name for the new folder:', text => {
+      addFolder(text);
+    });
+  };
+
+  const handleCreateNote = () => {
+      // Create a note in the first folder by default, or handle case with no folders
+      if (folders.length > 0) {
+          addNote(folders[0].id, 'New Note');
+      } else {
+          Alert.alert("No Folders", "Please create a folder first to add a note.");
+      }
+  }
+
+  const fabActions: Action[] = [
+    {
+      icon: 'note-add',
+      name: 'New Note',
+      onPress: handleCreateNote,
+      color: '#61758A',
+    },
+    {
+      icon: 'create-new-folder',
       name: 'New Folder',
-      count: 0,
-    };
-    setFolders(currentFolders => [newFolder, ...currentFolders]);
-  };
+      onPress: handleCreateFolder,
+      color: '#61758A',
+    },
+  ];
 
-  const handleDeleteFolder = (id: string) => {
-    setFolders(currentFolders =>
-      currentFolders.filter(folder => folder.id !== id)
-    );
-  };
+  // This function needs to be updated to get note counts
+  const getFolderItemData = (folder: any) => ({
+      ...folder,
+      count: 0, // Placeholder
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -35,15 +50,13 @@ export default function FoldersScreen() {
       <FlatList
         data={folders}
         renderItem={({ item }) => (
-          <FolderListItem item={item} onDelete={handleDeleteFolder} />
+          <FolderListItem item={getFolderItemData(item)} onDelete={deleteFolder} />
         )}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
-      <TouchableOpacity style={styles.fab} onPress={handleAddFolder}>
-        <MaterialIcons name="add" size={32} color="white" />
-      </TouchableOpacity>
+      <SpeedDialFab actions={fabActions} />
     </SafeAreaView>
   );
 }
@@ -67,21 +80,5 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: '#374151', // A subtle separator
-  },
-  fab: {
-    position: 'absolute',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#374151', // bg-gray-700
-    justifyContent: 'center',
-    alignItems: 'center',
-    bottom: 32, // bottom-8
-    right: 32, // right-8
-    elevation: 8, // shadow-lg
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
 });
