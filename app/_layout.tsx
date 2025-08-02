@@ -14,9 +14,8 @@ export default function RootLayout() {
       <Stack.Screen
         name="folder/[id]"
         options={{
-          title: 'My Notes',
           headerStyle: {
-            backgroundColor: '#121212',
+            backgroundColor: '#000000',
           },
           headerTintColor: '#FFFFFF',
           headerTitleStyle: {

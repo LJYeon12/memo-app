@@ -52,7 +52,7 @@ export default function FoldersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#111827', // bg-gray-900
+    backgroundColor: '#000000',
   },
   header: {
     color: '#FFFFFF', // text-white
