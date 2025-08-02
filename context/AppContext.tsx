@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
 import { router } from 'expo-router';
 
 // 1. Types
@@ -53,28 +53,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [folders, setFolders] = useState<Folder[]>(initialFolders);
   const [notes, setNotes] = useState<Note[]>(initialNotes);
 
-  const getNotesByFolder = (folderId: string) => {
+  const getNotesByFolder = useCallback((folderId: string) => {
     return notes.filter(note => note.folderId === folderId);
-  };
+  }, [notes]);
 
-  const getFoldersByParentId = (parentId: string | null) => {
+  const getFoldersByParentId = useCallback((parentId: string | null) => {
     return folders.filter(folder => folder.parentId === parentId);
-  };
+  }, [folders]);
 
-  const getFolderById = (folderId: string) => {
+  const getFolderById = useCallback((folderId: string) => {
     return folders.find(folder => folder.id === folderId);
-  };
+  }, [folders]);
 
-  const addFolder = (name: string, parentId: string | null = null) => {
+  const addFolder = useCallback((name: string, parentId: string | null = null) => {
     const newFolder: Folder = {
       id: Date.now().toString(),
       name,
       parentId,
     };
     setFolders(prev => [newFolder, ...prev]);
-  };
+  }, []);
 
-  const addNote = (folderId: string, title: string) => {
+  const addNote = useCallback((folderId: string, title: string) => {
     const newNote: Note = {
         id: `n${Date.now()}`,
         folderId,
@@ -86,22 +86,32 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setNotes(prev => [newNote, ...prev]);
     // Navigate to the new note's editor screen
     router.push(`/note/${newNote.id}`);
-  };
+  }, []);
 
-  const updateNote = (noteId: string, title: string, content: string) => {
+  const updateNote = useCallback((noteId: string, title: string, content: string) => {
     setNotes(prev =>
       prev.map(note =>
         note.id === noteId ? { ...note, title, content, date: new Date().toISOString().split('T')[0] } : note
       )
     );
-  };
+  }, []);
 
-  const deleteFolder = (folderId: string) => {
-    setFolders(prev => prev.filter(f => f.id !== folderId));
-    // Also delete notes within that folder
-    setNotes(prev => prev.filter(n => n.folderId !== folderId));
-    // TODO: Also delete subfolders recursively
-  };
+  const deleteFolder = useCallback((folderId: string) => {
+    const folderIdsToDelete: string[] = [folderId];
+
+    const findDescendants = (parentId: string) => {
+      const children = folders.filter(f => f.parentId === parentId);
+      for (const child of children) {
+        folderIdsToDelete.push(child.id);
+        findDescendants(child.id);
+      }
+    };
+
+    findDescendants(folderId);
+
+    setFolders(prev => prev.filter(f => !folderIdsToDelete.includes(f.id)));
+    setNotes(prev => prev.filter(n => !folderIdsToDelete.includes(n.folderId)));
+  }, [folders]);
 
   const value = {
     folders,
