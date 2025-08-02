@@ -39,6 +39,7 @@ interface AppContextType {
   getNotesByFolder: (folderId: string) => Note[];
   getFoldersByParentId: (parentId: string | null) => Folder[];
   getFolderById: (folderId: string) => Folder | undefined;
+  getNoteById: (noteId: string) => Note | undefined;
   addFolder: (name: string, parentId?: string | null) => void;
   addNote: (folderId: string, title: string) => void;
   updateNote: (noteId: string, title: string, content: string) => void;
@@ -65,6 +66,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return folders.find(folder => folder.id === folderId);
   }, [folders]);
 
+  const getNoteById = useCallback((noteId: string) => {
+    return notes.find(note => note.id === noteId);
+  }, [notes]);
+
   const addFolder = useCallback((name: string, parentId: string | null = null) => {
     const newFolder: Folder = {
       id: Date.now().toString(),
@@ -72,7 +77,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       parentId,
     };
     setFolders(prev => [newFolder, ...prev]);
-  }, []);
+  }, [setFolders]);
 
   const addNote = useCallback((folderId: string, title: string) => {
     const newNote: Note = {
@@ -86,7 +91,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setNotes(prev => [newNote, ...prev]);
     // Navigate to the new note's editor screen
     router.push(`/note/${newNote.id}`);
-  }, []);
+  }, [setNotes]);
 
   const updateNote = useCallback((noteId: string, title: string, content: string) => {
     setNotes(prev =>
@@ -94,7 +99,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         note.id === noteId ? { ...note, title, content, date: new Date().toISOString().split('T')[0] } : note
       )
     );
-  }, []);
+  }, [setNotes]);
 
   const deleteFolder = useCallback((folderId: string) => {
     const folderIdsToDelete: string[] = [folderId];
@@ -111,7 +116,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     setFolders(prev => prev.filter(f => !folderIdsToDelete.includes(f.id)));
     setNotes(prev => prev.filter(n => !folderIdsToDelete.includes(n.folderId)));
-  }, [folders]);
+  }, [folders, setFolders, setNotes]);
 
   const value = {
     folders,
@@ -119,6 +124,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     getNotesByFolder,
     getFoldersByParentId,
     getFolderById,
+    getNoteById,
     addFolder,
     addNote,
     updateNote,
