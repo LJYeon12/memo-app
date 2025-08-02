@@ -8,20 +8,20 @@ import { useAppContext } from '../../context/AppContext';
 export default function NoteEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
-  const { notes, updateNote } = useAppContext();
+  const { getNoteById, updateNote } = useAppContext();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const isModified = useRef(false);
 
   useEffect(() => {
-    const note = notes.find(n => n.id === id);
+    const note = getNoteById(id || '');
     if (note) {
       setTitle(note.title);
       setContent(note.content);
     }
     isModified.current = false; // Reset on new note load
-  }, [id, notes]);
+  }, [id, getNoteById]);
 
   useEffect(() => {
     navigation.setOptions({ title: title === '' ? 'New Note' : title });
