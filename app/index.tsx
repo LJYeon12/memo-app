@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import FolderListItem, { Folder } from '../components/FolderListItem';
 
-// Define dummy data based on the design
-const folders: Folder[] = [
+
+// Initial data
+const initialFolders: Folder[] = [
   { id: '1', name: 'Personal', count: 12 },
   { id: '2', name: 'Work', count: 5 },
   { id: '3', name: 'Ideas', count: 3 },
@@ -12,17 +13,35 @@ const folders: Folder[] = [
 ];
 
 export default function FoldersScreen() {
+  const [folders, setFolders] = useState(initialFolders);
+
+  const handleAddFolder = () => {
+    const newFolder: Folder = {
+      id: Date.now().toString(),
+      name: 'New Folder',
+      count: 0,
+    };
+    setFolders(currentFolders => [newFolder, ...currentFolders]);
+  };
+
+  const handleDeleteFolder = (id: string) => {
+    setFolders(currentFolders =>
+      currentFolders.filter(folder => folder.id !== id)
+    );
+  };
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Folders</Text>
       <FlatList
         data={folders}
-        renderItem={({ item }) => <FolderListItem item={item} />}
+        renderItem={({ item }) => (
+          <FolderListItem item={item} onDelete={handleDeleteFolder} />
+        )}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity style={styles.fab} onPress={handleAddFolder}>
         <MaterialIcons name="add" size={32} color="white" />
       </TouchableOpacity>
     </SafeAreaView>
